@@ -10,7 +10,7 @@ from typing import List
 import databases
 import sqlalchemy
 
-DATABASE_URL = "postgresql://ipfatilyvkombr:aa76173bf69f42405b697349fe2efab5a4469eb6f9873fd6bbd732cdce195e08@ec2-44-205-177-160.compute-1.amazonaws.com:5432/d9h65shlnphdek"
+DATABASE_URL = "postgresql://xhbfainwdghbxk:bb141093ec8cc9d0aa85c858adc13a64646665b9b525545f2c78e479efc5f2b7@ec2-44-193-178-122.compute-1.amazonaws.com:5432/dfb3r13u1u35pp"
 
 database = databases.Database(DATABASE_URL)
 
