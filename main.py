@@ -5,6 +5,7 @@ from fastapi_jwt_auth import AuthJWT
 from fastapi_jwt_auth.exceptions import AuthJWTException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import psycopg2
 
 app = FastAPI()
 
@@ -16,7 +17,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-class User(BaseModel):
+class Usere(BaseModel):
+    id: int = None
     username: str
     password: str
 
@@ -37,17 +39,37 @@ def authjwt_exception_handler(request: Request, exc: AuthJWTException):
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World Rasyue"}
+    conn = psycopg2.connect(
+        dbname='admin', user='postgres', password='nidal', host='localhost', port=5432
+    )
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM usere ORDER BY id DESC")
+    rows = cur.fetchall()
+    formatted_useres = []
+    for row in rows:
+        formatted_useres.append(
+            Usere(
+                id=row[0],
+                username=row[1],
+                password=row[2]
+            )
+        )
+    cur.close()
+    conn.close()
+    return formatted_useres
 
 
 @app.post('/login')
-def login(user: User, Authorize: AuthJWT = Depends()):
-    #user.username
-    #user.password
-    # this is the part where we will check the user credentials with our database record
-    #but since we are not going to use any db, straight away we will just create the token and send it back
-    # subject identifier for who this token is for example id or username from database
-    access_token = Authorize.create_access_token(subject=user.username)
+def login(usere: Usere, Authorize: AuthJWT = Depends()):
+    conn = psycopg2.connect(
+        dbname='admin', user='postgres', password='nidal', host='localhost', port=5432
+    )
+    cur = conn.cursor()
+    cur.execute(f"INSERT INTO usere (id,username,password) VALUES('{usere.id}','{usere.username}','{usere.password}')")
+    access_token = Authorize.create_access_token(subject=usere.username)
+    cur.close()
+    conn.commit()
+    conn.close()
     return {"access_token": access_token}
 
 
