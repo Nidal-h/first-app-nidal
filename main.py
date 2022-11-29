@@ -93,4 +93,5 @@ def user(Authorize: AuthJWT = Depends()):
     return {"user": 123124124, 'data': 'jwt test works'} 
     #current_user = Authorize.get_jwt_subject()
     #return {"user": current_user, 'data': 'jwt test works'} 
+    
 
