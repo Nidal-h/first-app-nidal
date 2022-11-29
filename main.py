@@ -1,11 +1,9 @@
-from typing import List
-
-import databases
-
-import sqlalchemy
-
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import List
+import databases
+import sqlalchemy
 
 
 DATABASE_URL = "postgresql://ponmmpifcdwawm:a9dacb1e8bbec96ad1952c04763d355a06c130813fd8231f257c96fae30fb166@ec2-54-174-31-7.compute-1.amazonaws.com:5432/d7643pet7550o5"
@@ -15,11 +13,9 @@ database = databases.Database(DATABASE_URL)
 
 metadata = sqlalchemy.MetaData()
 
+users = sqlalchemy.Table(
 
-
-notes = sqlalchemy.Table(
-
-    "notes",
+    "users",
 
     metadata,
 
@@ -28,6 +24,7 @@ notes = sqlalchemy.Table(
     sqlalchemy.Column("username", sqlalchemy.String),
 
     sqlalchemy.Column("password", sqlalchemy.String),
+
 
 )
 
@@ -38,20 +35,21 @@ engine = sqlalchemy.create_engine(
 )
 metadata.create_all(engine)
 
-
-class NoteIn(BaseModel):
-    text: str
-    completed: bool
-
-
-class Note(BaseModel):
-    id: int
+class Usere(BaseModel):
+    id: int = None
     username: str
     password: str
 
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 async def startup():
@@ -62,16 +60,14 @@ async def startup():
 async def shutdown():
     await database.disconnect()
 
-
-@app.get("/notes/", response_model=List[Note])
-async def read_notes():
-    query = notes.select()
+@app.get("/", response_model=List[Usere])
+async def read_users():
+    query = users.select()
     return await database.fetch_all(query)
 
-
-@app.post("/notes/", response_model=Note)
-async def create_note(note: Note):
-    query = notes.insert().values(username=note.username, password=note.password)
+@app.post("/login", response_model=Usere)
+async def create_user(usere: Usere):
+    query = users.insert().values(username=usere.username, password=usere.password)
     last_record_id = await database.execute(query)
-    return {**note.dict(), "id": last_record_id}
+    return {**usere.dict(), "id": last_record_id}   
 
