@@ -1,9 +1,12 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 from typing import List
+from fastapi import FastAPI
 import databases
+
 import sqlalchemy
+
+from fastapi import FastAPI
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 
 DATABASE_URL = "postgresql://ponmmpifcdwawm:a9dacb1e8bbec96ad1952c04763d355a06c130813fd8231f257c96fae30fb166@ec2-54-174-31-7.compute-1.amazonaws.com:5432/d7643pet7550o5"
