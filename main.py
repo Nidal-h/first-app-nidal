@@ -43,9 +43,6 @@ class Usere(BaseModel):
     username: str
     password: str
 
-class Settings(BaseModel):
-    authjwt_secret_key: str = "my_jwt_secret"
-
 app = FastAPI()
 
 @app.on_event("startup")
@@ -56,25 +53,6 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown():
     await database.disconnect()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-@AuthJWT.load_config
-def get_config():
-    return Settings()
-
-
-@app.exception_handler(AuthJWTException)
-def authjwt_exception_handler(request: Request, exc: AuthJWTException):
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"detail": exc.message}
-    )
 @app.get("/", response_model=List[Usere])
 async def read_users():
     query = users.select()
@@ -84,14 +62,6 @@ async def read_users():
 async def create_user(usere: Usere, Authorize: AuthJWT = Depends()):
     query = users.insert().values(username=usere.username, password=usere.password)
     last_record_id = await database.execute(query)
-    return {**usere.dict(), "id": last_record_id}   
-
-@app.get('/test-jwt')
-def user(Authorize: AuthJWT = Depends()):
-    
-    Authorize.jwt_required()
-    return {"user": 123124124, 'data': 'jwt test works'} 
-    #current_user = Authorize.get_jwt_subject()
-    #return {"user": current_user, 'data': 'jwt test works'} 
+    return {**usere.dict(), "id": last_record_id}
     
 
